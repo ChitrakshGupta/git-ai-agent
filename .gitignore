@@ -1,0 +1,48 @@
+# ── Python ───────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+env/
+
+# ── Node / Frontend ─────────────────────────────────────
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# ── Environment / Secrets ────────────────────────────────
+.env
+.env.*
+.env.local
+.env.*.local
+*.env
+backend/.env
+frontend/.env
+
+# ── IDE / OS ─────────────────────────────────────────────
+.vscode/
+.idea/
+.claude/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── Logs ─────────────────────────────────────────────────
+*.log
+npm-debug.log*
+
+# ── Local data ─────────────────────────────────────────
+*.db
+
+# ── Local notes / scripts ────────────────────────────────
+*.docx
+~$*
+DEMO_SCRIPT.md
+IMPLEMENTATION_PLAN.md
