@@ -24,7 +24,10 @@ class Settings:
     # Comma-separated, tried in order. A 429/503 on one model falls through to the next.
     GEMINI_MODELS: list[str] = [
         m.strip()
-        for m in os.getenv("GEMINI_MODELS", "gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-3.5-flash").split(",")
+        for m in os.getenv(
+            "GEMINI_MODELS",
+            "gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-3.8-flash,gemini-3.5-flash",
+        ).split(",")
         if m.strip()
     ]
     # Per-request timeout. Busy free-tier models can hang for a minute or more;
@@ -33,7 +36,7 @@ class Settings:
     AGENT_MAX_TURNS: int = int(os.getenv("AGENT_MAX_TURNS", "8"))
 
     # Postgres (Neon) in production; SQLite file by default so the project runs with no setup.
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "") or "sqlite+aiosqlite:///./reviews.db"
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "") or os.getenv("NEON_DATABASE_URL", "") or "sqlite+aiosqlite:///./reviews.db"
 
     JWT_SECRET: str = os.getenv("JWT_SECRET", "change-me-in-production")
     JWT_ALGORITHM: str = "HS256"

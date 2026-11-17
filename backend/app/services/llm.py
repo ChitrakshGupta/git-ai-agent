@@ -95,7 +95,7 @@ class GeminiLLM:
 
         last_error: Exception | None = None
         for model in models:
-            for attempt in range(2):
+            for attempt in range(3):
                 try:
                     async with _gemini_lock:
                         resp = await self._client.aio.models.generate_content(
@@ -108,23 +108,27 @@ class GeminiLLM:
                     if code not in _RETRYABLE:
                         logger.warning("Gemini %s failed with %s, not retrying: %s", model, code, str(exc)[:200])
                         break  # wrong model name, bad request: try the next model
-                    if code == 503:
-                        # "High demand" on the free tier rarely clears in seconds: move on.
+                    if code == 503 and len(models) > 1 and attempt == 0:
+                        # On turn 1 with multiple models available, move to the next model immediately
                         logger.warning("Gemini %s is overloaded (503), trying next model", model)
                         break
-                    delay = min(30.0, (2**attempt) * 4 + random.random())
+                    delay = min(15.0, (2**attempt) * 2 + random.random())
                     logger.warning("Gemini %s returned %s, retry %d in %.1fs", model, code, attempt + 1, delay)
                     await asyncio.sleep(delay)
                 except (asyncio.TimeoutError, OSError) as exc:  # includes httpx timeouts/connection errors
                     last_error = exc
-                    logger.warning("Gemini %s timed out or connection failed (%s), trying next model", model, exc)
-                    break
+                    logger.warning("Gemini %s timed out or connection failed (%s), retry %d", model, exc, attempt + 1)
+                    if attempt >= 2:
+                        break
+                    await asyncio.sleep(2.0)
                 except Exception as exc:
                     if "timeout" not in type(exc).__name__.lower():
                         raise
                     last_error = exc
-                    logger.warning("Gemini %s timed out, trying next model", model)
-                    break
+                    logger.warning("Gemini %s timed out, retry %d", model, attempt + 1)
+                    if attempt >= 2:
+                        break
+                    await asyncio.sleep(2.0)
         raise LLMUnavailable(f"All Gemini models failed. Last error: {last_error}")
 
     def start_chat(self, system: str, tools: list[ToolSpec]) -> "GeminiChat":
