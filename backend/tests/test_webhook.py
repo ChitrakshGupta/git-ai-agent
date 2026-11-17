@@ -84,3 +84,27 @@ async def test_queues_once_per_commit_and_publishes(client, connected_repo):
     assert post(client, pr_event(sha="ccc", draft=True)).json()["reason"] == "draft PR"
     assert len(client.queued) == 2
     assert all(publish for _, publish in client.queued)
+
+
+def test_uptime_and_health_endpoints(client):
+    # Test root endpoint
+    root_resp = client.get("/")
+    assert root_resp.status_code == 200
+    assert root_resp.json()["status"] == "ok"
+    assert client.head("/").status_code == 200
+
+    # Test uptime bot ping endpoint (GET and HEAD)
+    ping_resp = client.get("/ping")
+    assert ping_resp.status_code == 200
+    assert ping_resp.json()["status"] == "pong"
+    assert client.head("/ping").status_code == 200
+
+    # Test health endpoints
+    health_resp = client.get("/health")
+    assert health_resp.status_code == 200
+    assert health_resp.json()["status"] == "ok"
+    assert client.head("/health").status_code == 200
+
+    api_health_resp = client.get("/api/health")
+    assert api_health_resp.status_code == 200
+    assert api_health_resp.json()["status"] == "ok"

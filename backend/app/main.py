@@ -77,7 +77,19 @@ app.include_router(reviews_router)
 app.include_router(webhook_router)
 
 
+@app.api_route("/", methods=["GET", "HEAD"])
+async def root():
+    return {"status": "ok", "service": "git-ai-agent"}
+
+
+@app.api_route("/ping", methods=["GET", "HEAD"])
+async def ping():
+    """Ultra-lightweight ping endpoint for uptime bots (UptimeRobot, BetterStack, etc.)"""
+    return {"status": "pong"}
+
+
 @app.api_route("/health", methods=["GET", "HEAD"])
+@app.api_route("/api/health", methods=["GET", "HEAD"])
 async def health():
     return {
         "status": "ok",
